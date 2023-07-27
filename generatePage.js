@@ -1,4 +1,3 @@
-// Using ES6 module syntax
 import fs from 'fs';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
@@ -8,10 +7,10 @@ import ejs from 'ejs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Render a template
 
 const NUM_PAGES = 100;
 const API_URL = 'https://www.boredapi.com/api/activity';
+let usedActivities = [];
 
 async function fetchData() {
   try {
@@ -27,8 +26,12 @@ async function generatePages() {
   const template = fs.readFileSync('template.ejs', 'utf8');
 
   for (let i = 1; i <= NUM_PAGES; i++) {
-    const data = await fetchData();
-    if (!data) break;
+    let data;
+    do {
+      data = await fetchData();
+    } while (!data || usedActivities.includes(data.activity));
+
+    usedActivities.push(data.activity);
 
     const renderedHtml = ejs.render(template, data);
 
